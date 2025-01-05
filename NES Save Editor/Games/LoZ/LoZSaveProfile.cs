@@ -69,24 +69,46 @@ namespace NESSaveEditor.Games.LoZ
         /// <returns>true if valid; false otherwise</returns>
         //public bool isValid() => valid;
 
-        private static int checksum(int profile)
+        public static int checksum(this LoZSRAM sram, int slot)
         {
             int checksum = 0;
 
+            // Check Name Data
+            for(int i = 0; i < NAME_SIZE; i++)
+            {
+                checksum += sram.data[NAME_OFFSET + i + (slot * NAME_OFFSET)];
+            }
 
+            // inventory data
+            for( int i = 0; i < INVENTORY_SIZE; i++)
+            {
+                checksum += sram.data[INVENTORY_SIZE + i + (slot * INVENTORY_SIZE)];
+            }
+
+            // map data
+            for(int i = 0; i < MAP_DATA_SIZE; i++)
+            {
+                checksum += sram.data[MAP_DATA + i + (slot * MAP_DATA_SIZE)];
+            }
+
+            // misc data (0x512, 0x515, 0x518, 0x51B)
+            for(int i = 0; i < MISC_SIZE; i++)
+            {
+                checksum += sram.data[MISC_OFFSET + (i * 3) + slot];
+            }
 
             return checksum;
         }
 
-        private static int getChecksum(int profile)
+        public static int getChecksum(this LoZSRAM sram, int slot)
         {
-            return 0;
+            return sram.data[CHECKSUM_OFFSET + slot];
         }
 
-        private static void setChecksum(int profile, int checksum)
-        {
+        //private static void setChecksum(int profile, int checksum)
+        //{
 
-        }
+        //}
 
         /// <summary>
         /// Gets the name of the character
@@ -107,26 +129,58 @@ namespace NESSaveEditor.Games.LoZ
             return name;
         }
 
+        public static int getPlayCount(this LoZSRAM sram) => sram.data[MISC_OFFSET + PLAYCOUNT_OFFSET + sram.currentProfile];
+        public static Quest getQuest(this LoZSRAM sram) => (Quest)sram.data[MISC_OFFSET + QUEST_OFFSET + sram.currentProfile];
+
+        // Equipment
+        public static Sword getSword(this LoZSRAM sram) => (Sword)sram.data[INVENTORY_OFFSET + (sram.currentProfile * INVENTORY_SIZE) + SWORD_OFFSET];
         public static Arrow getArrows(this LoZSRAM sram) => (Arrow)sram.data[INVENTORY_OFFSET + (sram.currentProfile * INVENTORY_SIZE) + ARROWS_OFFSET];
+        public static Candle getCandle(this LoZSRAM sram) => (Candle)sram.data[INVENTORY_OFFSET + (sram.currentProfile * INVENTORY_SIZE) + CANDLE_OFFSET];
+        public static Potion getPotion(this LoZSRAM sram) => (Potion)sram.data[INVENTORY_OFFSET + (sram.currentProfile * INVENTORY_SIZE) + POTION_OFFSET];
+        public static Ring getRing(this LoZSRAM sram) => (Ring)sram.data[INVENTORY_OFFSET + (sram.currentProfile * INVENTORY_SIZE) + RING_OFFSET];
 
+        // Inventory
+        public static bool hasItem(this LoZSRAM sram, Items item)
+        {
+            var offset = INVENTORY_OFFSET + (sram.currentProfile * INVENTORY_SIZE) + (int)item;
+            return sram.data[offset] == 1;
+        }
+
+        // Bombs
         public static int getBombCapacity(this LoZSRAM sram) => sram.data[INVENTORY_OFFSET + (sram.currentProfile * INVENTORY_SIZE) + BOMBCAPACITY_OFFSET];
-
         public static int getBombs(this LoZSRAM sram) => sram.data[INVENTORY_OFFSET + (sram.currentProfile * INVENTORY_SIZE) + BOMBS_OFFSET];
 
-        //public static Candle getCandle(this LoZSRAM sram)
-        //public static bool hasCompass(this LoZSRAM sram, int level)
-        //public static int getHeartContainers(this LoZSRAM sram)
-        //public static bool hasItem(this LoZSRAM sram, Items item)
-        //public static int getKeys(this LoZSRAM sram)
-        //public static bool hasMap(this LoZSRAM sram, int level)
-        //public static Note getNote(this LoZSRAM sram)
-        public static int getPlayCount(this LoZSRAM sram) => sram.data[MISC_OFFSET + PLAYCOUNT_OFFSET + sram.currentProfile];
-        //public static Potion getPotion(this LoZSRAM sram)
-        public static Quest getQuest(this LoZSRAM sram) => (Quest)sram.data[MISC_OFFSET + QUEST_OFFSET + sram.currentProfile];
-        //public static Ring getRing(this LoZSRAM sram)
-        //public static int getRupees(this LoZSRAM sram)
-        public static Sword getSword(this LoZSRAM sram) => (Sword)sram.data[INVENTORY_OFFSET + (sram.currentProfile * INVENTORY_SIZE) + SWORD_OFFSET];
-        //public static bool hasTriforce(this LoZSRAM sram, int piece)
+        // Treasure
+        public static int getRupees(this LoZSRAM sram) => sram.data[INVENTORY_OFFSET + (sram.currentProfile * INVENTORY_SIZE) + RUPEES_OFFSET];
+        public static int getKeys(this LoZSRAM sram) => sram.data[INVENTORY_OFFSET + (sram.currentProfile * INVENTORY_SIZE) + KEYS_OFFSET];
+        public static int getHeartContainers(this LoZSRAM sram) => (sram.data[INVENTORY_OFFSET + (sram.currentProfile * INVENTORY_SIZE) + HEARTCONTAINERS_OFFSET] >> 4) + 1;
+
+        // Dungeon Items
+        public static bool hasCompass(this LoZSRAM sram, int level)
+        {
+            var compassOffset = level == 9 ? COMPASS9_OFFSET : COMPASS_OFFSET;
+            var offset = INVENTORY_OFFSET + (sram.currentProfile * INVENTORY_SIZE) + compassOffset;
+            
+            return (sram.data[offset] & (1 << (level - 1))) != 0;
+        }
+        
+        public static bool hasMap(this LoZSRAM sram, int level)
+        {
+            var mapOffset = level == 9 ? MAP9_OFFSET : MAP_OFFSET;
+            var offset = INVENTORY_OFFSET + (sram.currentProfile * INVENTORY_SIZE) + mapOffset;
+
+            return (sram.data[offset] & (1 << (level - 1))) != 0;
+        }
+
+        public static bool hasTriforce(this LoZSRAM sram, int piece)
+        {
+            var offset = INVENTORY_OFFSET + (sram.currentProfile * INVENTORY_SIZE) + TRIFORCE_OFFSET;
+
+            return (sram.data[offset] & (1 << (piece - 1))) != 0;
+        }
+
+        public static Note getNote(this LoZSRAM sram) => (Note)sram.data[INVENTORY_OFFSET + (sram.currentProfile * INVENTORY_SIZE) + NOTE_OFFSET];
+
 
         /// <summary>
         /// Translates a character from the Zelda alphabet to ASCII
