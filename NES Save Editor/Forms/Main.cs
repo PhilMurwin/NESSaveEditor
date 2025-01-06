@@ -1,5 +1,5 @@
 using NESSaveEditor.Forms;
-using NESSaveEditor.Games.Zelda2;
+using NESSaveEditor.Games.LoZ;
 
 namespace NESSaveEditor
 {
@@ -22,8 +22,17 @@ namespace NESSaveEditor
                 currentForm.Dispose();
             }
 
-            //currentForm = new Zelda2Form(fileName);
-            currentForm = new LoZForm(fileName);
+            var lozFile = new LoZSRAM(fileName);
+
+            if (lozFile.isLoZFile())
+            {
+                currentForm = new LoZForm(fileName);
+            }
+            else
+            {
+                currentForm = new Zelda2Form(fileName);
+            }
+
             currentForm.TopLevel = false; // Make the new form a child of the main form
             currentForm.Dock = DockStyle.Fill; // Ensure the new form fills the main form
             this.mainPanel.Controls.Add(currentForm); // Adds the new form to the main form

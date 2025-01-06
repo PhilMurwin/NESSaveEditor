@@ -91,6 +91,11 @@
             return true;
         }
 
+        public bool isZelda2File()
+        {
+            return games.Any(g => g.isValid());
+        }
+
         /// <summary>
         /// Checks if a particular game is valid
         /// </summary>

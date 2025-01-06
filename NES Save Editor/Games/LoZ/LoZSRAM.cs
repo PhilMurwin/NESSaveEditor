@@ -44,7 +44,7 @@
 
         public bool isLoZFile()
         {
-            return valid.Any();
+            return valid.Any(v => v);
         }
 
         public bool isValidGame(int slot)
