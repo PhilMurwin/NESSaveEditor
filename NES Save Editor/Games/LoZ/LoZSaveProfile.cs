@@ -69,20 +69,20 @@ namespace NESSaveEditor.Games.LoZ
         /// <returns>true if valid; false otherwise</returns>
         //public bool isValid() => valid;
 
-        public static int checksum(this LoZSRAM sram, int slot)
+        public static ushort checksum(this LoZSRAM sram, int slot)
         {
-            int checksum = 0;
+            ushort checksum = 0;
 
             // Check Name Data
             for(int i = 0; i < NAME_SIZE; i++)
             {
-                checksum += sram.data[NAME_OFFSET + i + (slot * NAME_OFFSET)];
+                checksum += sram.data[NAME_OFFSET + i + (slot * NAME_SIZE)];
             }
 
             // inventory data
             for( int i = 0; i < INVENTORY_SIZE; i++)
             {
-                checksum += sram.data[INVENTORY_SIZE + i + (slot * INVENTORY_SIZE)];
+                checksum += sram.data[INVENTORY_OFFSET + i + (slot * INVENTORY_SIZE)];
             }
 
             // map data
@@ -100,9 +100,13 @@ namespace NESSaveEditor.Games.LoZ
             return checksum;
         }
 
-        public static int getChecksum(this LoZSRAM sram, int slot)
+        public static ushort getChecksum(this LoZSRAM sram, int slot)
         {
-            return sram.data[CHECKSUM_OFFSET + slot];
+            // Read 16-bit value at the correct offset
+            var checksum = BitConverter.ToUInt16(sram.data, CHECKSUM_OFFSET + (slot * 2));
+
+            // Convert from big-endian
+            return (ushort)((checksum >> 8) | (checksum << 8)); // swap bytes
         }
 
         //private static void setChecksum(int profile, int checksum)

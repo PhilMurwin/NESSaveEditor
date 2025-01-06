@@ -21,15 +21,15 @@ namespace NESSaveEditor.Forms
 
             for (int slot = 2; slot >= 0; slot--)
             {
-                //if (sram.isValidGame(slot))
+                if (sram.isValidGame(slot))
                 {
                     profileList[slot].Enabled = true;
                     first = slot;
                 }
-                //else
-                //{
-                //    profileList[slot].Enabled = false;
-                //}
+                else
+                {
+                    profileList[slot].Enabled = false;
+                }
             }
 
             if (first == -1)
@@ -136,7 +136,7 @@ namespace NESSaveEditor.Forms
         private void game1_Click(object sender, EventArgs e)
         {
             LoadGameData(1);
-            game2.Checked = true;
+            game1.Checked = true;
             game0.Checked = game2.Checked = false;
         }
 

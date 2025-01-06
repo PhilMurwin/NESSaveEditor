@@ -1,12 +1,12 @@
-﻿using NESSaveEditor.Games.Zelda2;
-
-namespace NESSaveEditor.Games.LoZ
+﻿namespace NESSaveEditor.Games.LoZ
 {
     public class LoZSRAM
     {
         private string _fileName;
         public int currentProfile;
         public byte[] data;
+        private bool[] valid = new bool[3];
+        private string emptyName = "        ";
 
         public LoZSRAM(string fileName)
         {
@@ -23,15 +23,33 @@ namespace NESSaveEditor.Games.LoZ
         {
             data = File.ReadAllBytes(fileName);
 
-            //for (int slot = 2; slot >= 0; slot--)
-            //{
-            //    profiles[slot] = new LoZSaveProfile(data, slot);
+            for (int slot = 2; slot >= 0; slot--)
+            {
+                valid[slot] = false;
+                var calcChecksum = this.checksum(slot);
+                var actualChecksum = this.getChecksum(slot);
+                if (calcChecksum == actualChecksum)
+                {
+                    valid[slot] = true;
+                    setCurrentGame(slot);
 
-            //    //if (games[slot].isValid())
-            //    //{
-            //    //    current = slot;
-            //    //}
-            //}
+                    if (this.getName() == emptyName)
+                    {
+                        // empty slot
+                        valid[slot] = false;
+                    }
+                }
+            }
+        }
+
+        public bool isLoZFile()
+        {
+            return valid.Any();
+        }
+
+        public bool isValidGame(int slot)
+        {
+            return valid[slot];
         }
 
         /// <summary>
