@@ -40,7 +40,10 @@
             }
 
             // Create backup file
-            File.WriteAllBytes(fileName + ".bak", data);
+            if (isZelda2File())
+            {
+                File.WriteAllBytes(fileName + ".bak", data);
+            }
         }
 
         /// <summary>

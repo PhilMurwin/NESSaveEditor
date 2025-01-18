@@ -40,6 +40,12 @@
                     }
                 }
             }
+
+            // Create backup file
+            if (isLoZFile())
+            {
+                File.WriteAllBytes(fileName + ".bak", data);
+            }
         }
 
         public bool isLoZFile()
